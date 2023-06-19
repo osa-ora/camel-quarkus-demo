@@ -20,19 +20,6 @@ public class RestJDBCRoute extends RouteBuilder {
         from("direct:userRoute")
             .log("Received request with user ID: ${header.id}")
             .setHeader("Content-Type", constant("application/json"))
-            .bean(UserServiceBean.class, "getUser")
             .log("Response: ${body}");
-    }
-    public static class UserServiceBean {
-        public String getUser(@Header("id") String id, Exchange exchange) {
-            if ("1".equals(id)) {
-                return "{ \"name\": \"Osa Ora\", \"age\": 30 }";
-            } else if ("2".equals(id)) {
-                return "{ \"name\": \"Osama Oransa\", \"age\": 35 }";
-            } else {
-                exchange.getMessage().setHeader("CamelHttpResponseCode", 404);
-                return "{ \"error\": \"User not found\" }";
-            }
-        }
     }
 }
