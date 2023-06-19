@@ -4,13 +4,14 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Header;
 import org.apache.camel.builder.RouteBuilder;
 import javax.enterprise.context.ApplicationScoped;
+import org.apache.camel.model.rest.RestBindingMode;
 
 @ApplicationScoped
 public class RestJDBCRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-
+        estConfiguration().bindingMode(RestBindingMode.json);
         // Define the REST API endpoint
         rest("/api")
             .get("/user/{id}")
@@ -20,6 +21,19 @@ public class RestJDBCRoute extends RouteBuilder {
         from("direct:userRoute")
             .log("Received request with user ID: ${header.id}")
             .setHeader("Content-Type", constant("application/json"))
+            .bean(UserServiceBean.class, "getUser")
             .log("Response: ${body}");
+    }
+    public static class UserServiceBean {
+        public String getUser(@Header("id") String id, Exchange exchange) {
+            if ("1".equals(id)) {
+                return "{ \"name\": \"Osa Ora\", \"age\": 30 }";
+            } else if ("2".equals(id)) {
+                return "{ \"name\": \"Osama Oransa\", \"age\": 35 }";
+            } else {
+                exchange.getMessage().setHeader("CamelHttpResponseCode", 404);
+                return "{ \"error\": \"User not found\" }";
+            }
+        }
     }
 }
