@@ -10,33 +10,29 @@ public class RestJDBCRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        // Define REST API endpoint
-        rest("/users")
-            .get("/{id}")
-            .to("direct:getUserAccount");
 
-        // Define the route to retrieve user account details from the database
-        from("direct:getUserAccount")
+        // Define the REST API endpoint
+        rest("/api")
+            .get("/user/{id}")
+                .to("direct:userRoute");
+
+        // Define the route that handles the parameter and generates the response
+        from("direct:userRoute")
+            .log("Received request with user ID: ${header.id}")
             .setHeader("Content-Type", constant("application/json"))
-            .bean(DatabaseService.class, "getUserAccount") // Call the custom bean here
-            .to("jdbc:camel")
-            .choice()
-                .when(simple("${body.size()} > 0"))
-                    .transform().jsonpath("$[0]")
-                    .setHeader("CamelHttpResponseCode", constant(200))
-                .otherwise()
-                    .setHeader("CamelHttpResponseCode", constant(404))
-                    .setBody(constant("{ \"error\": \"User account not found\" }"))
-            .end()
-            .convertBodyTo(String.class) // Convert the response body to a string
-            .log("User account details: ${body}");
+            .bean(UserServiceBean.class, "getUser")
+            .log("Response: ${body}");
     }
-    //This bean for DB query preparation, it can return DB query per DB type ..
-    public static class DatabaseService {
-        public void getUserAccount(@Header("id") String id, Exchange exchange) {
-            // Existing logic to fetch user account details from the database
-            exchange.getIn().setBody("select * from account where id = " + id + " LIMIT 1");
-            exchange.getIn().setHeader("CamelSqlQuery", true);
+    public static class UserServiceBean {
+        public String getUser(@Header("id") String id, Exchange exchange) {
+            if ("1".equals(id)) {
+                return "{ \"name\": \"Osa Ora\", \"age\": 30 }";
+            } else if ("2".equals(id)) {
+                return "{ \"name\": \"Osama Oransa\", \"age\": 35 }";
+            } else {
+                exchange.getMessage().setHeader("CamelHttpResponseCode", 404);
+                return "{ \"error\": \"User not found\" }";
+            }
         }
     }
 }
