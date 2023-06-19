@@ -11,7 +11,7 @@ public class RestJDBCRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        estConfiguration().bindingMode(RestBindingMode.json);
+        restConfiguration().bindingMode(RestBindingMode.json);
         // Define the REST API endpoint
         rest("/api")
             .get("/user/{id}")
