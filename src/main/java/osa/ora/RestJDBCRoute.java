@@ -11,7 +11,6 @@ public class RestJDBCRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        restConfiguration().component("undertow").bindingMode(RestBindingMode.json);
         // Define the REST API endpoint
         rest("/api")
             .get("/hello/{name}")
