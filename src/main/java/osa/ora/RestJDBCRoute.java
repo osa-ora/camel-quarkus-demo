@@ -14,26 +14,31 @@ public class RestJDBCRoute extends RouteBuilder {
         restConfiguration().component("undertow").bindingMode(RestBindingMode.json);
         // Define the REST API endpoint
         rest("/api")
+            .get("/hello/{name}")
+                .to("direct:helloRoute");
+        
+        // Define the REST API endpoint
+        rest("/api")
             .get("/user/{id}")
                 .to("direct:userRoute");
+
+        // Define the route that handles the parameter and generates the response
+        from("direct:helloRoute")
+            .log("Received request with name: ${header.name}")
+            .setHeader("Content-Type", constant("text/plain"))
+            .setBody(simple("Hello, ${header.name}!"));
 
         // Define the route that handles the parameter and generates the response
         from("direct:userRoute")
             .log("Received request with user ID: ${header.id}")
             .setHeader("Content-Type", constant("application/json"))
-            .bean(UserServiceBean.class, "getUser")
-            .log("Response: ${body}");
-    }
-    public static class UserServiceBean {
-        public String getUser(@Header("id") String id, Exchange exchange) {
-            if ("1".equals(id)) {
-                return "{ \"name\": \"Osa Ora\", \"age\": 30 }";
-            } else if ("2".equals(id)) {
-                return "{ \"name\": \"Osama Oransa\", \"age\": 35 }";
-            } else {
-                exchange.getMessage().setHeader("CamelHttpResponseCode", 404);
-                return "{ \"error\": \"User not found\" }";
-            }
-        }
+            .choice()
+                .when(header("id").isEqualTo("1"))
+                    .setBody(constant("{ \"name\": \"Osa Ora\", \"age\": 30 }"))
+                .when(header("id").isEqualTo("2"))
+                    .setBody(constant("{ \"name\": \"Osama Oransa\", \"age\": 35 }"))
+                .otherwise()
+                    .setHeader("CamelHttpResponseCode", constant(404))
+                    .setBody(constant("{ \"error\": \"User not found\" }"));
     }
 }
