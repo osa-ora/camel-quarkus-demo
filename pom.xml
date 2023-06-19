@@ -51,12 +51,16 @@
       <artifactId>quarkus-arc</artifactId>
     </dependency>
     <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-undertow</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-direct</artifactId>
     </dependency>
     <dependency>
-            <groupId>org.apache.camel.quarkus</groupId>
-            <artifactId>camel-quarkus-jackson</artifactId>
+        <groupId>org.apache.camel.quarkus</groupId>
+        <artifactId>camel-quarkus-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
